@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use App\Repositories\ClientRepository;
+use App\Support\Container;
 use App\Support\CRest;
 use App\Support\Logger;
 
@@ -14,10 +16,32 @@ Logger::info('Установка приложения', [
     'result'  => $result,
 ]);
 
+$clientId = 0;
+if ($result['install'] && isset($_REQUEST['DOMAIN']) && isset($_REQUEST['APP_SID'])) {
+    /** @var Container $container */
+    $clientRepository = $container->get(ClientRepository::class);
+
+    $array = explode('.', $_REQUEST['DOMAIN']);
+
+    try {
+        $client = $clientRepository->getByDomain($_REQUEST['DOMAIN']);
+
+        if ($client) {
+            $clientId = $client['id'];
+        } else {
+            $clientId = $clientRepository->create([
+                'domain'  => $_REQUEST['DOMAIN'],
+            ]);
+        }
+    } catch (Throwable $e) {
+        Logger::error('[install.php] Error adding client in DB -> ' . $e->getMessage());
+    }
+}
+
 if ($result['rest_only'] === false):?>
     <head>
         <script src="//api.bitrix24.com/api/v1/"></script>
-        <?php if ($result['install']):?>
+        <?php if ($result['install'] && $clientId > 0):?>
             <script>
                 BX24.init(function() {
                     BX24.installFinish();
@@ -26,8 +50,8 @@ if ($result['rest_only'] === false):?>
         <?php endif;?>
     </head>
     <body>
-        <?php if ($result['install']):?>
-            Приложение успешно установлено
+        <?php if ($result['install'] && $clientId > 0):?>
+            Приложение успешно установлено. ID клиента = <?= $clientId ?>
         <?php else:?>
             Во время установки приложения возникла ошибка
         <?php endif;?>

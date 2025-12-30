@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="33c203ce-cd60-4296-9ca7-7a0cca1766ff" name="migrator">
-        <fileTransfer accessType="SFTP" host="95.163.226.236" port="22" sshConfigId="8109b3c2-5ed2-4b58-a603-94fd9698366d" sshConfig="root@95.163.226.236:22 password">
+        <fileTransfer rootFolder="/var/www/html" accessType="SFTP" host="95.163.226.236" port="22" sshConfigId="8109b3c2-5ed2-4b58-a603-94fd9698366d" sshConfig="root@95.163.226.236:22 password">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

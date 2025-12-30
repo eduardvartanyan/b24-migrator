@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS clients (
+    id SERIAL PRIMARY KEY,
+    domain VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
