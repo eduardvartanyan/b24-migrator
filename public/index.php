@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Controllers\SettingsController;
 use App\Support\Container;
+use App\Support\Logger;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../public/bootstrap.php';
@@ -18,6 +19,13 @@ try {
             if ($method === 'POST') {
                 $controller = $container->get(SettingsController::class);
                 $controller->showForm();
+            }
+            break;
+
+        case '/app-settings/update':
+            if ($method === 'POST') {
+                $controller = $container->get(SettingsController::class);
+                $controller->update();
             }
             break;
     }

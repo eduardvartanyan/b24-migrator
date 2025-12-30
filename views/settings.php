@@ -331,96 +331,21 @@ $client = $clientRepository->getByDomain($domain);
                                 type="text"
                                 name="webhook"
                                 placeholder="Скопируйте в поле ссылку на входящий вебхук"
-                                value="<?= htmlspecialchars($client['web_hook'] ?? '') ?>"
+                                value="<?= htmlspecialchars($client['webhook'] ?? '') ?>"
                                 required
                         />
                         <div class="b24-form-hint">
                             Создайте входящий вебхук в разделе
                             <span class="b24-path">
-                            Разработчикам
-                            <span class="b24-path-sep">›</span>
-                            <a href="https://<?= $domain ?>/devops/section/standard/" target="_blank">
-                                Другое
-                            </a>
-                        </span>.
-                            Установите права <span class="b24-chip">CRM (crm)</span>, <span class="b24-chip">Чат и уведомления (im)</span>.
+                                Разработчикам
+                                <span class="b24-path-sep">›</span>
+                                <a href="https://<?= $domain ?>/devops/section/standard/" target="_blank">
+                                    Другое
+                                </a>
+                            </span>.
+                            Установите права <span class="b24-chip">CRM (crm)</span>, <span class="b24-chip">Пользователи (user)</span>,
+                            <span class="b24-chip">Торговый каталог (catalog)</span>.
                             Скопируйте значение поля <span class="b24-field-name">Вебхук для вызова REST API</span>
-                        </div>
-                    </div>
-
-                    <div class="b24-form-group">
-                        <label for="title" class="b24-form-label b24-required">
-                            Название компании в форме:
-                        </label>
-                        <input
-                                id="title"
-                                class="b24-input"
-                                type="text"
-                                name="title"
-                                placeholder="например: Моя компания"
-                                value="<?= htmlspecialchars($client['title'] ?? '') ?>"
-                                required
-                        />
-                        <div class="b24-form-hint">
-                            Произвольное, узнаваемое клиентами название.
-                            Клиенты его увидял в заголовке формы отзыва
-                        </div>
-                    </div>
-
-                    <div class="b24-form-group">
-                        <label for="code" class="b24-form-label b24-required">
-                            Код компании в ссылке на форму отзыва:
-                        </label>
-                        <input
-                                id="code"
-                                class="b24-input"
-                                type="text"
-                                name="code"
-                                placeholder="например: my-company"
-                                value="<?= htmlspecialchars($client['code'] ?? '') ?>"
-                                required
-                        />
-                        <div class="b24-form-hint">
-                            Используется в ссылке на отзыв вида <code>https://crm-reviews.ru/r/my-company/</code>.
-                            Только латиница, цифры и дефис
-                        </div>
-                    </div>
-
-                    <div class="b24-form-group">
-                        <label class="b24-checkbox">
-                            <input
-                                type="checkbox"
-                                name="notify"
-                                value="Y"
-                                <?= $client['notify'] === 'Y' ? 'checked' : '' ?>
-                            />
-                            <span class="b24-checkbox-box"></span>
-                            <span class="b24-checkbox-label">
-                                Отправлять уведомление в чат о новом отзыве
-                            </span>
-                        </label>
-
-                        <div class="b24-form-hint">
-                            При добавлении отзыва будут отправлены уведомления в чат отвественным за контакт и сделку
-                        </div>
-                    </div>
-
-                    <div class="b24-form-group">
-                        <label class="b24-checkbox">
-                            <input
-                                    type="checkbox"
-                                    name="no_repeat"
-                                    value="Y"
-                                <?= $client['no_repeat'] === 'Y' ? 'checked' : '' ?>
-                            />
-                            <span class="b24-checkbox-box"></span>
-                            <span class="b24-checkbox-label">
-                                Запретить повторный отзыв
-                            </span>
-                        </label>
-
-                        <div class="b24-form-hint">
-                            При установленной опции контакт не может дважды оставить отзыв по одной и той же сделке
                         </div>
                     </div>
 
@@ -432,67 +357,6 @@ $client = $clientRepository->getByDomain($domain);
             </div>
         </div>
     </div>
-    <aside class="b24-app-sidebar">
-        <div class="b24-instruction-card">
-            <div class="b24-instruction-title">
-                Как это работает
-            </div>
-
-            <div class="b24-instruction-text">
-                Для каждой сделки и контакта формируется <strong>уникальная ссылка на отзыв</strong> вида
-                <code>https://crm-reviews.ru/r/my-company/</code>.
-            </div>
-
-            <ol class="b24-instruction-list">
-                <li>
-                    <strong>Формирование и использование ссылки</strong><br>
-                    Ссылка создаётся автоматически в бизнес-процессе сделки с помощью специального действия
-                    <span class="b24-field-name">Ссылка на отзыв</span>.
-                </li>
-
-                <li>
-                    <strong>Использование ссылки</strong><br>
-                    После выполнения действия дополнительных результатах бизнес-процесса повится <strong>массив</strong> ссылок.
-                    <strong>Для каждого контакта своя ссылка</strong>.
-                    Её можно использовать в последующих стандартных действиях, например:
-                    <ul class="b24-instruction-sublist">
-                        <li>отправить клиенту по e-mail,</li>
-                        <li>отправить в мессенджер,</li>
-                        <li>отправить по SMS.</li>
-                    </ul>
-                    <div class="b24-instruction-media">
-                        <img src="/images/scr_1.png" width="480px" />
-                    </div>
-                </li>
-
-                <li>
-                    <strong>Заполнение отзыва клиентом</strong><br>
-                    Клиент переходит по ссылке, открывается форма отзыва:
-                    <ul class="b24-instruction-sublist">
-                        <li>ставит оценку,</li>
-                        <li>при желании оставляет комментарий,</li>
-                        <li>сохраняет отзыв.</li>
-                    </ul>
-                    <div class="b24-instruction-media">
-                        <img src="/images/scr_2.png" width="240px" />
-                    </div>
-                </li>
-
-                <li>
-                    <strong>Результат в Битрикс24</strong><br>
-                    После сохранения отзыв автоматически:
-                    <ul class="b24-instruction-sublist">
-                        <li>добавляется в ленту сделки,</li>
-                        <li>добавляется в ленту контакта.</li>
-                    </ul>
-                    Таким образом, вся обратная связь сохраняется прямо в CRM и доступна для дальнейшей работы.
-                    <div class="b24-instruction-media">
-                        <img src="/images/scr_3.png" width="520px" />
-                    </div>
-                </li>
-            </ol>
-        </div>
-    </aside>
 </div>
 
 <script>
@@ -547,7 +411,7 @@ $client = $clientRepository->getByDomain($domain);
             }
 
         } catch (e) {
-            alert('Ошибка сети: ' + e.message);
+            alert('Ошибка: ' + e.message);
         }
     });
 </script>
