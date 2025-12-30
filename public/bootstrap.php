@@ -12,4 +12,4 @@ $dotenv->load();
 $container = new Container();
 
 $container->set(ClientRepository::class,   fn() => new ClientRepository());
-$container->set(SettingsController::class, fn() => new SettingsController($container->get(ClientRepository::class)));
+$container->set(SettingsController::class, fn() => new SettingsController());

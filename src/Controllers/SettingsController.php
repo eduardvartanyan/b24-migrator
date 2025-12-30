@@ -3,11 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Repositories\ClientRepository;
-
 class SettingsController
 {
-    public function __construct(private readonly ClientRepository $clientRepository) { }
+    public function __construct() { }
 
     public function showForm(): void
     {
