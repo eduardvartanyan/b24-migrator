@@ -45,7 +45,7 @@ if ($result['rest_only'] === false):?>
             <script>
                 BX24.init(function() {
                     BX24.installFinish();
-                }
+                });
             </script>
         <?php endif;?>
     </head>

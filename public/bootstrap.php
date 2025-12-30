@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Controllers\SettingsController;
 use App\Repositories\ClientRepository;
 use App\Support\Container;
 use Dotenv\Dotenv;
@@ -11,3 +12,4 @@ $dotenv->load();
 $container = new Container();
 
 $container->set(ClientRepository::class,   fn() => new ClientRepository());
+$container->set(SettingsController::class, fn() => new SettingsController($container->get(ClientRepository::class)));
