@@ -8,3 +8,15 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 echo $method . ': ' . $uri;
+
+try {
+    switch ($uri) {
+        case '/index.php':
+            if ($method === 'POST') {
+                echo 'Migrator Hello!';
+            }
+            break;
+    }
+} catch (Throwable $e) {
+    echo $e->getMessage();
+}
