@@ -454,6 +454,53 @@ $jobs = [
         color: #4bb34b;
         display: none;
     }
+
+    /* ===============================
+   Disabled buttons (Bitrix24-like)
+   =============================== */
+
+    .b24-btn:disabled,
+    .b24-btn[disabled] {
+        background: #e6eaef;
+        color: #9aa1ab;
+        cursor: auto;
+        box-shadow: none;
+        opacity: 1; /* важно — Bitrix не использует opacity */
+    }
+
+    .b24-btn:disabled:hover,
+    .b24-btn[disabled]:hover {
+        background: #e6eaef;
+        color: #9aa1ab;
+    }
+
+    /* Secondary button */
+    .b24-btn--secondary:disabled,
+    .b24-btn--secondary[disabled] {
+        background: #f5f7f8;
+        color: #9aa1ab;
+        border-color: #dfe3e8;
+        cursor: auto;
+    }
+
+    .b24-btn--secondary:disabled:hover,
+    .b24-btn--secondary[disabled]:hover {
+        background: #f5f7f8;
+    }
+
+    /* Icon buttons (если будут disabled) */
+    .b24-icon-btn:disabled,
+    .b24-icon-btn[disabled] {
+        background: #f5f7f8;
+        color: #b0b4bb;
+        border-color: #e7eaee;
+        cursor: auto;
+    }
+
+    .b24-icon-btn:disabled:hover {
+        background: #f5f7f8;
+    }
+
 </style>
 
 <div class="b24-app-layout">
@@ -559,6 +606,7 @@ $jobs = [
                                 name="webhook"
                                 placeholder="Скопируйте в поле ссылку на входящий вебхук"
                                 value="<?= htmlspecialchars($client['webhook'] ?? '') ?>"
+                                data-initial-value="<?= htmlspecialchars($client['webhook'] ?? '') ?>"
                                 required
                         />
                         <div class="b24-form-hint">
@@ -704,86 +752,95 @@ $jobs = [
     }
 
     function closeSettings() {
-        // Если вебхук НЕ настроен — закрывать нельзя (по требованиям)
         if (!webhookConfigured) return;
-
         const el = getSettingsEl();
         if (!el) return;
         el.style.display = 'none';
     }
 
     function toggleSettings() {
-        // Если вебхук НЕ настроен — кнопка disabled, но на всякий случай
         if (!webhookConfigured) return;
-
         const el = getSettingsEl();
         if (!el) return;
 
         const isHidden = (el.style.display === 'none' || getComputedStyle(el).display === 'none');
-        if (isHidden) openSettings();
-        else closeSettings();
+        isHidden ? openSettings() : closeSettings();
     }
 
-    // --- Settings form logic ---
+    // ----------------------------
+    // ЛОГИКА КНОПКИ "СОХРАНИТЬ"
+    // ----------------------------
     document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('settings-form');
         const saveBtn = document.getElementById('save-btn');
-        const requiredFields = form.querySelectorAll('[required]');
+        const webhookInput = document.getElementById('webhook');
+        const initialValue = webhookInput.dataset.initialValue.trim();
 
-        function checkFormValidity() {
-            let isValid = true;
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) isValid = false;
-            });
-            saveBtn.disabled = !isValid;
+        function updateSaveButtonState() {
+            const currentValue = webhookInput.value.trim();
+
+            const isNotEmpty = currentValue.length > 0;
+            const isChanged = currentValue !== initialValue;
+
+            saveBtn.disabled = !(isNotEmpty && isChanged);
         }
 
-        checkFormValidity();
+        // Начальное состояние
+        saveBtn.disabled = true;
 
-        requiredFields.forEach(field => {
-            field.addEventListener('input', checkFormValidity);
-            field.addEventListener('change', checkFormValidity);
-        });
+        // Реакция на изменения
+        webhookInput.addEventListener('input', updateSaveButtonState);
+        webhookInput.addEventListener('change', updateSaveButtonState);
 
-        // Если вебхук не настроен — настройки должны быть видны сразу (уже сделано стилем),
-        // но на всякий случай:
+        // Если вебхук не настроен — настройки открыты сразу
         if (!webhookConfigured) {
             openSettings();
         }
-    });
 
-    document.getElementById('settings-form').addEventListener('submit', async function (e) {
-        e.preventDefault();
+        // Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const formData = new FormData(e.target);
-        const status = document.getElementById('save-status');
+            // защита от двойного клика
+            if (saveBtn.disabled) return;
 
-        try {
-            const response = await fetch('/app-settings/update', {
-                method: 'POST',
-                body: formData
-            });
+            const formData = new FormData(form);
+            const status = document.getElementById('save-status');
 
-            const result = await response.json();
+            saveBtn.disabled = true;
 
-            if (result.status === 'OK') {
-                status.style.display = 'inline';
-                setTimeout(() => status.style.display = 'none', 2000);
+            try {
+                const response = await fetch('/app-settings/update', {
+                    method: 'POST',
+                    body: formData
+                });
 
-                // Разблокируем кнопку создания миграции
-                document.querySelectorAll('button[onclick="createJob()"]').forEach(btn => btn.disabled = false);
+                const result = await response.json();
 
-                // В идеале — после сохранения вебхука нужно обновить страницу,
-                // чтобы корректно изменились условия (disabled/скрытие и т.д.)
-                // но можно мягко сделать так:
-                location.reload();
-            } else {
-                alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+                if (result.status === 'OK') {
+                    status.style.display = 'inline';
+                    setTimeout(() => status.style.display = 'none', 2000);
+
+                    // обновляем "исходное" значение
+                    webhookInput.dataset.initialValue = webhookInput.value.trim();
+
+                    // после сохранения кнопка снова неактивна
+                    saveBtn.disabled = true;
+
+                    // обновляем страницу, чтобы пересобрать UI-состояние
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+                    updateSaveButtonState();
+                }
+            } catch (err) {
+                alert('Ошибка: ' + err.message);
+                updateSaveButtonState();
             }
-        } catch (err) {
-            alert('Ошибка: ' + err.message);
-        }
+        });
     });
 
-    function createJob() { alert('Открыть мастер создания миграции (TODO)'); }
+    function createJob() {
+        alert('Открыть мастер создания миграции (TODO)');
+    }
 </script>
