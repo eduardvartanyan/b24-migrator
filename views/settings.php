@@ -453,6 +453,7 @@ $jobs = [
         font-size: 13px;
         color: #4bb34b;
         display: none;
+        padding-top: 8px;
     }
 
     /* ===============================
@@ -774,10 +775,17 @@ $jobs = [
         const form = document.getElementById('settings-form');
         const saveBtn = document.getElementById('save-btn');
         const webhookInput = document.getElementById('webhook');
-        const initialValue = webhookInput.dataset.initialValue.trim();
+        const status = document.getElementById('save-status');
+
+        // ВАЖНО: initialValue должен быть изменяемым
+        let initialValue = (webhookInput.dataset.initialValue || '').trim();
+
+        function getCurrentValue() {
+            return (webhookInput.value || '').trim();
+        }
 
         function updateSaveButtonState() {
-            const currentValue = webhookInput.value.trim();
+            const currentValue = getCurrentValue();
 
             const isNotEmpty = currentValue.length > 0;
             const isChanged = currentValue !== initialValue;
@@ -787,48 +795,52 @@ $jobs = [
 
         // Начальное состояние
         saveBtn.disabled = true;
+        updateSaveButtonState();
 
-        // Реакция на изменения
         webhookInput.addEventListener('input', updateSaveButtonState);
         webhookInput.addEventListener('change', updateSaveButtonState);
 
-        // Если вебхук не настроен — настройки открыты сразу
-        if (!webhookConfigured) {
-            openSettings();
-        }
-
-        // Submit
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            // защита от двойного клика
             if (saveBtn.disabled) return;
 
-            const formData = new FormData(form);
-            const status = document.getElementById('save-status');
+            const currentValue = getCurrentValue();
+            if (!currentValue) {
+                updateSaveButtonState();
+                return;
+            }
 
+            // защита от двойного клика
             saveBtn.disabled = true;
 
             try {
                 const response = await fetch('/app-settings/update', {
                     method: 'POST',
-                    body: formData
+                    body: new FormData(form),
                 });
 
                 const result = await response.json();
 
                 if (result.status === 'OK') {
+                    // 1) фиксируем новое исходное значение В ДВУХ МЕСТАХ
+                    initialValue = currentValue;
+                    webhookInput.dataset.initialValue = currentValue;
+
+                    // 2) показываем статус
                     status.style.display = 'inline';
                     setTimeout(() => status.style.display = 'none', 2000);
 
-                    // обновляем "исходное" значение
-                    webhookInput.dataset.initialValue = webhookInput.value.trim();
+                    // 3) сразу пересчитать состояние кнопки (теперь current === initial)
+                    updateSaveButtonState();
 
-                    // после сохранения кнопка снова неактивна
-                    saveBtn.disabled = true;
+                    // 4) разблокировать кнопки, которые зависят от вебхука
+                    document.querySelectorAll('button[onclick="createJob()"]').forEach(btn => btn.disabled = false);
 
-                    // обновляем страницу, чтобы пересобрать UI-состояние
-                    location.reload();
+                    const settingsBtn = document.querySelector('button[onclick="toggleSettings()"]');
+                    if (settingsBtn) {
+                        settingsBtn.disabled = false;
+                        settingsBtn.removeAttribute('title');
+                    }
                 } else {
                     alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
                     updateSaveButtonState();
