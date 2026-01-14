@@ -502,6 +502,40 @@ $jobs = [
         background: #f5f7f8;
     }
 
+    /* ===============================
+   Settings smooth collapse/expand
+   =============================== */
+
+    .b24-collapsible {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-6px);
+        transition:
+                max-height 280ms ease,
+                opacity 180ms ease,
+                transform 180ms ease;
+        will-change: max-height, opacity, transform;
+        margin-bottom: 0;
+    }
+
+    .b24-collapsible.is-open {
+        max-height: 1200px; /* достаточно для формы и подсказок */
+        opacity: 1;
+        transform: translateY(0);
+        margin-bottom: 16px;
+    }
+
+    .b24-collapsible.is-close {
+        margin-bottom: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .b24-collapsible {
+            transition: none;
+        }
+    }
+
 </style>
 
 <div class="b24-app-layout">
@@ -580,7 +614,7 @@ $jobs = [
             </div>
         </div>
         <!-- Settings (toggle / auto-open) -->
-        <div class="b24-section" id="settings-section" style="<?= $webhookConfigured ? 'display:none;' : '' ?>">
+        <div class="b24-section b24-collapsible <?= $webhookConfigured ? '' : 'is-open' ?>" id="settings-section">
             <div class="b24-settings-card">
                 <div class="b24-settings-head">
                     <div class="b24-settings-title">Настройки</div>
@@ -745,18 +779,33 @@ $jobs = [
         return document.getElementById('settings-section');
     }
 
+    function isSettingsOpen(el) {
+        return el.classList.contains('is-open');
+    }
+
     function openSettings() {
         const el = getSettingsEl();
         if (!el) return;
-        el.style.display = 'block';
-        el.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+        el.classList.add('is-open');
+
+        // лёгкий UX: прокрутка только когда пользователь сам открывает
+        // (если автопоказ при пустом вебхуке — можно не скроллить)
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function openSettingsSilently() {
+        const el = getSettingsEl();
+        if (!el) return;
+        el.classList.add('is-open');
     }
 
     function closeSettings() {
-        if (!webhookConfigured) return;
+        if (!webhookConfigured) return; // по твоим правилам
         const el = getSettingsEl();
         if (!el) return;
-        el.style.display = 'none';
+
+        el.classList.remove('is-open');
     }
 
     function toggleSettings() {
@@ -764,8 +813,8 @@ $jobs = [
         const el = getSettingsEl();
         if (!el) return;
 
-        const isHidden = (el.style.display === 'none' || getComputedStyle(el).display === 'none');
-        isHidden ? openSettings() : closeSettings();
+        if (isSettingsOpen(el)) closeSettings();
+        else openSettings();
     }
 
     // ----------------------------
