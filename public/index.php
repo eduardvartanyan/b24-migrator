@@ -28,6 +28,11 @@ try {
                 $controller->update();
             }
             break;
+
+        case '/test':
+            $b24service = $container->get(\App\Services\B24Service::class);
+            $b24service->scopeList();
+            break;
     }
 } catch (Throwable $e) {
     echo $e->getMessage();
