@@ -871,18 +871,14 @@ $jobs = [
                 const result = await response.json();
 
                 if (result.status === 'OK') {
-                    // 1) фиксируем новое исходное значение В ДВУХ МЕСТАХ
                     initialValue = currentValue;
                     webhookInput.dataset.initialValue = currentValue;
 
-                    // 2) показываем статус
                     status.style.display = 'inline';
                     setTimeout(() => status.style.display = 'none', 2000);
 
-                    // 3) сразу пересчитать состояние кнопки (теперь current === initial)
                     updateSaveButtonState();
 
-                    // 4) разблокировать кнопки, которые зависят от вебхука
                     document.querySelectorAll('button[onclick="createJob()"]').forEach(btn => btn.disabled = false);
 
                     const settingsBtn = document.querySelector('button[onclick="toggleSettings()"]');
@@ -892,6 +888,7 @@ $jobs = [
                     }
                 } else {
                     alert('Ошибка: ' + (result.error || 'Неизвестная ошибка'));
+                    webhookInput.value = initialValue;
                     updateSaveButtonState();
                 }
             } catch (err) {

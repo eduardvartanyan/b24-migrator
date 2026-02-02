@@ -31,7 +31,7 @@ try {
 
         case '/test':
             $b24service = $container->get(\App\Services\B24Service::class);
-            $b24service->scopeList();
+            var_dump($b24service->checkWebhook());
             break;
     }
 } catch (Throwable $e) {

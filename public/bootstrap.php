@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Controllers\SettingsController;
 use App\Repositories\ClientRepository;
 use App\Services\B24Service;
+use App\Services\SettingsService;
 use App\Support\Container;
 use App\Support\System;
 use Bitrix24\SDK\Services\ServiceBuilder;
@@ -24,4 +25,5 @@ if (empty($webhook)) {
 $container->set(ServiceBuilder::class,     fn() => ServiceBuilderFactory::createServiceBuilderFromWebhook($webhook));
 $container->set(B24Service::class,         fn() => new B24Service($container->get(ServiceBuilder::class)));
 $container->set(ClientRepository::class,   fn() => new ClientRepository());
-$container->set(SettingsController::class, fn() => new SettingsController($container->get(ClientRepository::class)));
+$container->set(SettingsController::class, fn() => new SettingsController($container->get(SettingsService::class)));
+$container->set(SettingsService::class,    fn() => new SettingsService($container->get(ClientRepository::class)));
