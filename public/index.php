@@ -30,8 +30,8 @@ try {
             break;
 
         case '/test':
-            $b24service = $container->get(\App\Services\B24Service::class);
-            var_dump($b24service->checkWebhook());
+            $settingsService = $container->get(\App\Services\SettingsService::class);
+            var_dump($settingsService->updateWebhook('portal-mmit.ru', 'qwedqw'));
             break;
     }
 } catch (Throwable $e) {
